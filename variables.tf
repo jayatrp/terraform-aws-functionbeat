@@ -21,6 +21,22 @@ variable "lambda_config" {
     })
     output_elasticsearch = any
   })
+  default = {
+    name = "my-kibana-exporter"
+
+    vpc_config = {
+      vpc_id             = "vpc-b03cebc8 "
+      subnet_ids         = ["subnet-1d3d2347 "]
+      security_group_ids = ["sg-029c1f70"]
+    }
+
+    output_elasticsearch = {
+      hosts : ["https://vpc-functionbeat-poc-w5r452kvp2s2cizqsu5rvvf5si.us-east-1.es.amazonaws.com"]
+      protocol : "https"
+      username : "bbtest123"
+      password : "GObb2022!!"
+    }
+  }
 }
 
 # ================================= Extra Lambda ==================================

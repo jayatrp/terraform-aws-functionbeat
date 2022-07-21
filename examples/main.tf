@@ -2,38 +2,16 @@ provider "aws" {
   max_retries = 1337
   region      = "eu-central-1"
 }
-
-resource "aws_vpc" "vpc" {
-  cidr_block = "172.16.0.0/16"
-  tags = {
-    Name = "Test-VPC"
-  }
-}
-
-resource "aws_subnet" "subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(aws_vpc.vpc.cidr_block, 8, 10)
-  availability_zone = "eu-central-1a"
-  tags = {
-    Name = "Private"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "example_logs" {
-  name              = "MyExampleService"
-  retention_in_days = 1
-}
-
 resource "aws_security_group" "functionbeat_securitygroup" {
   name   = "Functionbeat"
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = "vpc-b03cebc8 "
 
   egress {
     from_port   = 443
     protocol    = "tcp"
     to_port     = 443
     description = "HTTPS"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.210.0.0/16"]
   }
 }
 
@@ -41,26 +19,9 @@ module "functionbeat" {
   source = "../"
 
   application_name     = "crazy-test-module"
-  functionbeat_version = "7.17.1"
+  functionbeat_version = "8.3.2"
 
-  lambda_config = {
-    name = "my-kibana-exporter"
-
-    vpc_config = {
-      vpc_id             = aws_vpc.vpc.id
-      subnet_ids         = [aws_subnet.subnet.id]
-      security_group_ids = [aws_security_group.functionbeat_securitygroup.id]
-    }
-
-    output_elasticsearch = {
-      hosts : ["https://your-endpoint:443"]
-      protocol : "https"
-      username : "elastic"
-      password : "mysupersecret"
-    }
-  }
-
-  loggroup_name = aws_cloudwatch_log_group.example_logs.name
+  lambda_config = var.lambda_config
 
   fb_extra_configuration = {
     fields = {
